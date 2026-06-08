@@ -22,7 +22,7 @@ def synthesize_dummy_data(output_path="data/network_traffic.csv", rows=5000):
     
     # 3. Inject Anomalies (DDoS Spikes)
     labels = np.zeros(rows) # 0 = Normal, 1 = Attack
-    anomaly_indices = [1000, 2500, 4000]
+    anomaly_indices = [1000, 2500, 4000, 4500] # Added 4500 for the test set
     for idx in anomaly_indices:
         # A massive spike over 10-20 seconds
         duration = np.random.randint(10, 20)
