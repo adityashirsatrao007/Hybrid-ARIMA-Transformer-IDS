@@ -121,7 +121,8 @@ if __name__ == "__main__":
     
     datasets = [
         ("data/kdd_http.csv", "KDDCup99_HTTP"),
-        ("data/kdd_smtp.csv", "KDDCup99_SMTP")
+        ("data/kdd_smtp.csv", "KDDCup99_SMTP"),
+        ("data/kaggle_kddcup99.csv", "Kaggle_KDDCup99_Real")
     ]
     
     for path, name in datasets:

@@ -50,8 +50,9 @@ def preprocess_data(input_path="data/network_traffic.csv"):
     df = pd.read_csv(input_path)
     
     scaler = MinMaxScaler(feature_range=(0, 1))
-    # We will forecast 'TotalBytes'
-    scaled_values = scaler.fit_transform(df[["TotalBytes"]])
+    # We will forecast 'TotalBytes' or 'Value'
+    target_col = "TotalBytes" if "TotalBytes" in df.columns else "Value"
+    scaled_values = scaler.fit_transform(df[[target_col]])
     
     print("Preprocessing complete.")
     return scaled_values, scaler, df
