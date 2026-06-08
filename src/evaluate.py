@@ -44,9 +44,9 @@ def run_pipeline():
     # Align labels with the truncated test data (due to sequence length)
     aligned_labels = test_labels[seq_length+1:]
     
-    # Detect Anomalies adaptively
-    detected_anomalies, adaptive_thresholds, errors = detect_anomalies(
-        final_actual, hybrid_forecast, window=50, k=3
+    # Detect Anomalies adaptively with PSO
+    detected_anomalies, adaptive_thresholds, errors, k_history = detect_anomalies(
+        final_actual, hybrid_forecast, window=50, dynamic_k=True, true_labels=aligned_labels
     )
     
     # 5. Explainable AI (SHAP)
@@ -88,25 +88,33 @@ def run_pipeline():
         
     # Generate Visualizations
     print("\nGenerating IEEE Figures...")
-    plt.figure(figsize=(15, 6))
-    plt.plot(final_actual, label="Actual Network Traffic", color='blue', alpha=0.6)
-    plt.plot(hybrid_forecast, label="Hybrid ARIMA-Transformer Forecast", color='orange', alpha=0.8)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 10), gridspec_kw={'height_ratios': [3, 1]})
+    
+    # Plot 1: Forecast & Anomalies
+    ax1.plot(final_actual, label="Actual Network Traffic", color='blue', alpha=0.6)
+    ax1.plot(hybrid_forecast, label="Hybrid ARIMA-Transformer Forecast", color='orange', alpha=0.8)
     
     # Mark real attacks
     attack_indices = np.where(aligned_labels == 1)[0]
     if len(attack_indices) > 0:
-        plt.scatter(attack_indices, final_actual[attack_indices], color='red', label="True DDoS Attack", marker='x', s=50, zorder=5)
+        ax1.scatter(attack_indices, final_actual[attack_indices], color='red', label="True DDoS Attack", marker='x', s=50, zorder=5)
         
     # Mark detected anomalies
     detected_indices = np.where(detected_anomalies == 1)[0]
     if len(detected_indices) > 0:
-        # Move up slightly so they don't overlap perfectly with True attacks visually
-        plt.scatter(detected_indices, final_actual[detected_indices]*1.05, color='purple', label="Model Detected Anomaly", marker='v', s=50, zorder=6)
+        ax1.scatter(detected_indices, final_actual[detected_indices]*1.05, color='purple', label="Model Detected Anomaly", marker='v', s=50, zorder=6)
         
-    plt.title("Adaptive Hybrid ARIMA-Transformer Forecast & Anomaly Detection")
-    plt.xlabel("Time (s)")
-    plt.ylabel("Normalized Traffic Volume")
-    plt.legend()
+    ax1.set_title("Adaptive Hybrid ARIMA-Transformer Forecast & Anomaly Detection")
+    ax1.set_ylabel("Normalized Traffic Volume")
+    ax1.legend()
+    
+    # Plot 2: PSO K-Multiplier History
+    ax2.plot(k_history, label="PSO Optimized K-Multiplier", color='green')
+    ax2.set_title("Particle Swarm Optimization: Dynamic Sensitivity Adjustment")
+    ax2.set_xlabel("Time (s)")
+    ax2.set_ylabel("Threshold Multiplier (k)")
+    ax2.legend()
+    
     plt.tight_layout()
     plt.savefig("results/forecast_anomaly_detection.png", dpi=300)
     plt.close()
