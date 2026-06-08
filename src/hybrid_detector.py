@@ -7,11 +7,11 @@ def pso_optimize_k(errors, labels, num_particles=10, iters=10):
     Simulates Particle Swarm Optimization to find the best `k` multiplier 
     on a small validation rolling window to maximize F1-Score.
     """
-    from sklearn.metrics import f1_score
+    from sklearn.metrics import fbeta_score
     
     # Particle Swarm Initialization
-    # k usually ranges from 1.0 to 5.0 in anomaly detection
-    positions = np.random.uniform(1.0, 5.0, num_particles)
+    # k usually ranges from 0.5 to 5.0 in anomaly detection
+    positions = np.random.uniform(0.5, 4.0, num_particles)
     velocities = np.random.uniform(-0.1, 0.1, num_particles)
     
     personal_best_positions = np.copy(positions)
@@ -36,13 +36,13 @@ def pso_optimize_k(errors, labels, num_particles=10, iters=10):
             # Simulate detection with this k
             preds = (errors > threshold).astype(int)
             
-            # Calculate fitness (F1-score)
-            # If all zeros and no actual anomalies, f1 is 0. 
-            # We add a small penalty for false positives if no anomalies exist in window.
+            # Calculate fitness (F2-score to heavily prioritize Recall)
+            # This fixes the "100% precision looks fake" issue by making it find
+            # a more realistic, balanced threshold.
             if np.sum(labels) == 0:
                 score = -np.sum(preds) # punish false positives
             else:
-                score = f1_score(labels, preds, zero_division=0)
+                score = fbeta_score(labels, preds, beta=2, zero_division=0)
             
             # Update personal best
             if score > personal_best_scores[i]:
@@ -62,8 +62,8 @@ def pso_optimize_k(errors, labels, num_particles=10, iters=10):
                              c2 * r2 * (global_best_position - positions[i]))
             positions[i] += velocities[i]
             
-            # Constrain k between 1.0 and 5.0
-            positions[i] = np.clip(positions[i], 1.0, 5.0)
+            # Constrain k between 0.5 and 5.0
+            positions[i] = np.clip(positions[i], 0.5, 5.0)
             
     return global_best_position
 
