@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import mean_squared_error, mean_absolute_error, f1_score, precision_score, recall_score, confusion_matrix, ConfusionMatrixDisplay, roc_curve, auc, RocCurveDisplay
+from sklearn.metrics import mean_squared_error, mean_absolute_error, f1_score, precision_score, recall_score, confusion_matrix, ConfusionMatrixDisplay, roc_curve, auc, RocCurveDisplay, precision_recall_curve, PrecisionRecallDisplay
 from data_prep import synthesize_dummy_data, preprocess_data
 from model_arima import fit_arima_and_extract_residuals
 from model_transformer import train_transformer, create_sequences
@@ -105,6 +105,17 @@ def run_pipeline(dataset_csv, dataset_name):
         plt.savefig(f"results/roc_curve_{dataset_name}.png", dpi=300)
         plt.close()
         print(f"ROC AUC Score: {roc_auc:.4f}")
+        
+        # Plot Precision-Recall Curve
+        prec_curve, rec_curve, _ = precision_recall_curve(aligned_labels, errors)
+        
+        plt.figure(figsize=(8,6))
+        pr_disp = PrecisionRecallDisplay(precision=prec_curve, recall=rec_curve, estimator_name="Hybrid ARIMA-Transformer")
+        pr_disp.plot(ax=plt.gca(), color='purple', lw=2)
+        plt.title(f"Precision-Recall Curve ({dataset_name})")
+        plt.tight_layout()
+        plt.savefig(f"results/pr_curve_{dataset_name}.png", dpi=300)
+        plt.close()
     else:
         print("No attacks in the test set to evaluate F1-score.")
         
