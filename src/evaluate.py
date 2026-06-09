@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import mean_squared_error, mean_absolute_error, f1_score, precision_score, recall_score, confusion_matrix
+from sklearn.metrics import mean_squared_error, mean_absolute_error, f1_score, precision_score, recall_score, confusion_matrix, ConfusionMatrixDisplay, roc_curve, auc, RocCurveDisplay
 from data_prep import synthesize_dummy_data, preprocess_data
 from model_arima import fit_arima_and_extract_residuals
 from model_transformer import train_transformer, create_sequences
@@ -82,6 +82,29 @@ def run_pipeline(dataset_csv, dataset_name):
         print(f"Cyber Attack Detection Precision: {precision:.4f}")
         print(f"Cyber Attack Detection Recall: {recall:.4f}")
         print(f"False Positive Rate (FPR): {fpr:.4f}")
+        
+        # Plot Confusion Matrix
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Normal", "Attack"])
+        disp.plot(cmap=plt.cm.Blues)
+        plt.title(f"Confusion Matrix ({dataset_name})")
+        plt.tight_layout()
+        plt.savefig(f"results/confusion_matrix_{dataset_name}.png", dpi=300)
+        plt.close()
+        
+        # Plot ROC-AUC
+        # The 'score' for ROC is the absolute error since higher error means more likely to be an anomaly
+        fpr_curve, tpr_curve, _ = roc_curve(aligned_labels, errors)
+        roc_auc = auc(fpr_curve, tpr_curve)
+        
+        plt.figure(figsize=(8,6))
+        roc_disp = RocCurveDisplay(fpr=fpr_curve, tpr=tpr_curve, roc_auc=roc_auc, estimator_name="Hybrid ARIMA-Transformer")
+        roc_disp.plot(ax=plt.gca(), color='darkorange', lw=2)
+        plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+        plt.title(f"ROC Curve ({dataset_name})")
+        plt.tight_layout()
+        plt.savefig(f"results/roc_curve_{dataset_name}.png", dpi=300)
+        plt.close()
+        print(f"ROC AUC Score: {roc_auc:.4f}")
     else:
         print("No attacks in the test set to evaluate F1-score.")
         
