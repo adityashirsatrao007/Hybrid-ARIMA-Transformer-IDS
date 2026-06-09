@@ -8,6 +8,22 @@ from model_transformer import train_transformer, create_sequences
 from hybrid_detector import generate_hybrid_forecast, detect_anomalies
 from xai_explainer import explain_transformer
 
+# IEEE Paper 2-Column Formatting Global Settings
+plt.style.use('default')
+plt.rcParams.update({
+    'figure.facecolor': 'white',
+    'axes.facecolor': 'white',
+    'savefig.facecolor': 'white',
+    'text.color': 'black',
+    'axes.labelcolor': 'black',
+    'xtick.color': 'black',
+    'ytick.color': 'black',
+    'font.size': 10,
+    'axes.titlesize': 11,
+    'axes.labelsize': 10,
+    'legend.fontsize': 9
+})
+
 def run_pipeline(dataset_csv, dataset_name):
     print(f"\n{'='*50}")
     print(f"--- STARTING IEEE PIPELINE: {dataset_name} ---")
@@ -96,7 +112,7 @@ def run_pipeline(dataset_csv, dataset_name):
         fpr_curve, tpr_curve, _ = roc_curve(aligned_labels, errors)
         roc_auc = auc(fpr_curve, tpr_curve)
         
-        plt.figure(figsize=(8,6))
+        plt.figure(figsize=(5,4))
         roc_disp = RocCurveDisplay(fpr=fpr_curve, tpr=tpr_curve, roc_auc=roc_auc, estimator_name="Hybrid ARIMA-Transformer")
         roc_disp.plot(ax=plt.gca(), color='darkorange', lw=2)
         plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
@@ -109,7 +125,7 @@ def run_pipeline(dataset_csv, dataset_name):
         # Plot Precision-Recall Curve
         prec_curve, rec_curve, _ = precision_recall_curve(aligned_labels, errors)
         
-        plt.figure(figsize=(8,6))
+        plt.figure(figsize=(5,4))
         pr_disp = PrecisionRecallDisplay(precision=prec_curve, recall=rec_curve, estimator_name="Hybrid ARIMA-Transformer")
         pr_disp.plot(ax=plt.gca(), color='purple', lw=2)
         plt.title(f"Precision-Recall Curve ({dataset_name})")
@@ -121,7 +137,7 @@ def run_pipeline(dataset_csv, dataset_name):
         
     # Generate Visualizations
     print("\nGenerating IEEE Figures...")
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 10), gridspec_kw={'height_ratios': [3, 1]})
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5, 6), gridspec_kw={'height_ratios': [3, 1]})
     
     ax1.plot(final_actual, label="Actual Network Traffic", color='blue', alpha=0.6)
     ax1.plot(hybrid_forecast, label="Hybrid ARIMA-Transformer Forecast", color='orange', alpha=0.8)
